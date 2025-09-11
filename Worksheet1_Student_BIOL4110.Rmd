@@ -1,0 +1,402 @@
+---
+
+title: "BIOL*4110 Worksheet 1 - Intro to R"
+author: "Emma Churchman"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Getting Familiar with R
+
+### Welcome to BIOL4110! 
+Get ready to level up your R skills! These worksheets are here to guide you on your R adventure. We’ll kick things off with some simple commands and then work our way up to the trickier — and much cooler — parts of the R language.
+
+## Getting Started
+Before we get too far into it, it's good practice in reproducibility to 'start from scratch' in R. This way, you make sure your code is always re-runnable. To remove any previous user-defined objects run:
+```{r}
+rm(list = ls())
+```
+
+Now, load the required add-on packages for this assignment by running the following code chunk. You can load the chunk by clicking on the chunk, and clicking the "Run" button (keyboard shortcut: Command + Enter on a Mac, or Control + Enter on Windows)
+
+```{r}
+library(tidyverse)
+```
+
+Did an error pop up for you? If so, it may be because the necessary packages aren’t installed yet. To install the testthat package, run: `install.packages("testthat", dependencies = TRUE)`. The `dependencies = TRUE` part makes sure that any additional packages that testthat relies on are also installed.
+
+**Important:** you only need to install a package once. After it’s installed, it stays on your computer - so feel free to delete any `install.packages` lines from your script afterward. In fact, it's polite practice to remove any `install.packages` lines in your code for future readers. 
+
+Once the package is installed, load it by running the code chunk again, and you should be good to go!
+
+When you load `tidyverse`, you may see a message about “conflicts.” This just means two packages share the same function name. For this course, when you use `filter()` or `lag()`, you should assume it’s the `dplyr` version (for data wrangling), not the base `stats` version. However, for today, we're just practicing loading packages. We won't actually use anything aside from Base R. 
+
+### 1.1 Calculator
+In its simplest form, R can be used as an interactive calculator
+```{r} 
+# DEMO CODE HERE
+```
+
+What if you need to compute a longer expression? Let’s say I want to estimate the percentage of a grassland reserve that is currently occupied by bison. I could compute this in several steps, or use a more complex expression.
+
+**Using multiple steps...**
+To calculate the total number of bison in the reserve, I add the 520 animals counted last year to the 85 calves born this year:
+```{r}
+# DEMO CODE HERE
+```
+
+However, 12 older animals died over the winter. So the current population size is:
+```{r}
+# DEMO CODE HERE
+```
+
+The grassland reserve supports about 9,000 large grazers in total (including bison, elk, and pronghorn). To find the proportion of grazers that are bison, I divide:
+```{r}
+# DEMO CODE HERE
+```
+
+```{r}
+# DEMO CODE HERE
+```
+
+**What if we use a single expression?**
+It seems that around 6.6% of the large grazers are bison… but that took a few steps to calculate. We could also write it like this:
+```{r}
+# DEMO CODE HERE
+```
+By using brackets appropriately, we save time and reduce mistakes.
+
+**Your turn!**
+Imagine you are working with a wetland bird population:
+- The total wetland bird community has 4,500 individuals.
+- Last year, 430 herons were counted. This year, 25 more were observed, but 8 are known to have died.
+
+Write a **single expression** to calculate what percentage of the wetland bird community is currently made up of herons.
+```{r}
+#YOUR TRIAL CODE HERE, not marked
+```
+
+### 1.2 Variables
+R works just fine as a calculator—but that’s not why we’re learning a programming language. The real benefit comes when you want to reuse a result in later calculations. Instead of retyping the whole expression (or copy-pasting numbers around), you can store your result in a variable.
+
+For example, I calculated earlier that bison make up 6.6% of all large grazers in a grassland reserve (593 bison out of 9,000 total grazers). To save this number and remind myself what it represents, I’ll assign it to a `variable` called `bison_percent`, which will help me remember what my value means.
+
+In R, you assign a value to a variable using the `assignment operator` `<-` (a “less than” symbol followed by a minus sign).
+```{r}
+# DEMO CODE HERE
+```
+
+I've assigned a value to a variable, but what if I no longer need that variable? To remove a variable:
+```{r}
+# DEMO CODE HERE
+```
+
+Now, the variable `bison_percent` I just removed stored the value `6.6`, which is the percentage of grazers that are bison. We try to avoid deleting variables, and so unsurprisingly, I need it back. Before we reassign it, recall: before saving it into a variable, I first had to calculate it. What if I directly assigned the arithmetic expression to the variable?
+```{r}
+# DEMO CODE HERE
+```
+Here, R does the calculation but doesn’t print the result — because it assumes you want to store it for later use, not see it right away.
+
+To view the contents of the variable, simply type its name and press Enter:
+```{r}
+bison_percent
+```
+
+What if I did want to see the result right away? 
+```{r}
+# DEMO CODE HERE
+```
+
+Try running the following in your console: `bisonpercent`
+
+Did it fail? You've entered into an implicit contract with the computer / scripting language: Computer will do tedious computation for you. In return, you will be completely precise in your instructions. Typos matter. Case matters. 
+
+**QUESTION 1.0**
+Now it’s your turn. Using the wetland bird example from above (herons out of the total bird community):
+- Total birds in the wetland: 4,500
+- Herons counted last year: 430
+- This year 25 more, but 8 died
+
+Write a single expression to calculate the percentage of wetland birds that are herons, and assign it to a variable called `heron_percent`
+```{r}
+# YOUR ANSWER HERE
+```
+
+### 1.3 Data Structures
+Any object that contains data is called a data structure.
+
+#### 1.3.1 Vectors
+Up to this point, you’ve used R as a calculator and created variables to store numbers. In R, though, a `variable` is really just a label that points to some data so you can use it again later. Think of it like tagging a sample vial in the field — the label reminds you what the vial contains.
+
+The variable you just made, `bison_percent`, actually holds the simplest type of data structure in R: a `vector`. Even a single number counts as a vector of length one. That’s exactly what `bison_percent` is. Let’s confirm it:
+```{r}
+bison_percent #demo
+```
+In this way, the vector is the container of data, and the variable is the label. But what if you want a vector that’s longer than one number? The easiest way to create a vector is with `c()`, which stands for “concatenate” (combine).
+
+**QUESTION 1.1**
+Let’s give it a try. Imagine a quick biodiversity survey where you recorded counts of three species: 14 sparrows, 7 warblers, and 22 blackbirds. To create a vector with these numbers, type:
+```{r}
+# DEMO CODE HERE
+```
+
+Store the result in a variable called `bird_counts`
+```{r}
+# YOUR ANSWER HERE
+```
+
+Now, type `bird_counts` and press Enter to see its contents. Notice that R doesn’t show commas in the output — it just lists the numbers.
+
+You can also combine vectors. For example:
+```{r}
+# DEMO CODE HERE
+```
+
+And you can combine any numeric vectors together, whether or not they’ve been assigned to a variable:
+```{r}
+# DEMO CODE HERE
+```
+
+**QUESTION 1.2**
+Your turn: Create a new vector that combines `bison_percent`, `bird_counts`, and the number 100. Store your result in a variable named answer1.2.
+```{r}
+# YOUR ANSWER HERE
+```
+
+Another neat thing about numeric vectors is that you can do arithmetic with them. For example, let’s say I want to double `bird_counts` and add a constant (100):
+
+Before running the code, what do you think the result will be?
+
+1. A vector with three elements (each bird count increased by 100)
+2. A single number (a vector of length 1)
+3. An empty vector (length 0)
+
+**QUESTION 1.3** Assign your answer (1, 2, or 3) to a variable called answer1.3.
+
+```{r}
+# YOUR ANSWER HERE
+```
+
+Now try it:
+```{r}
+# DEMO CODE HERE
+```
+
+
+**Logical vectors**
+So far, we’ve only worked with numbers. But vectors can also be logical — they can store `TRUE`, `FALSE`, or `NA` values. These are useful when testing conditions.
+
+**QUESTION 1.4** 
+Three camera traps recorded the following number of deer in a week: 18, 25, and 12. Create a vector with these values and assign it to a variable called `deer_counts`.
+```{r}
+# YOUR ANSWER HERE
+```
+
+**QUESTION 1.5**
+Which cameras recorded more than 20 deer? Multiply the `deer_counts` vector by 1 (to keep numbers unchanged), and then compare it with 20 using >. Store the result in a variable called `deer_over20`.
+```{r}
+# YOUR ANSWER HERE
+```
+Now type `deer_over20` and press Enter. You’ll see a logical vector (`TRUE` or `FALSE`) that tells you which camera locations had more than 20 deer.
+
+Congratulations — you’ve just created your first logical vector! Logical vectors are extremely handy in ecology. For instance, you can use them to flag sites above a threshold, find species with minimum counts, or test conditions in an experiment.
+
+R also has other kinds of vectors, such as character vectors (which hold text). We won’t dive get into every detail here — for this course, the most important types to focus on are numeric and logical vectors, since they’re the ones you’ll use most often. Still, it’s good to know that other types exist. If you’re curious, you can explore more in R for Data Science https://r4ds.had.co.nz/vectors.html
+
+Anyway, here is a handy tip! If you ever come across a vector and you're not sure what it is, you can inspect its two key properties: type, and length. Here is an example of how you would do it. "Double" is just a type of numeric vector.
+`typeof(x)`
+`length(x)`
+
+Try it!
+```{r}
+typeof(bird_counts)
+length(deer_counts)
+```
+
+
+#### 1.3.2 Dataframes
+Living in a vector-only world would be nice if all ecological data came in a single list, but most real datasets have multiple variables. When we want to store data in a tabular format (rows × columns), we use a data frame.
+
+R has some data frames “built in.” For example, the dataset `iris` contains measurements of flower characteristics in three Iris species.
+```{r}
+# DEMO CODE HERE
+```
+Notice the tabular format: each row is an individual plant, and each column is a variable (sepal length, sepal width, etc.).
+
+We’ll talk more about data frames later, but for now keep in mind: they’re one of the most commonly used data structures in ecological data science.
+
+### 1.4 Subsetting
+Often, when you’re working with a large ecological dataset, you’ll only be interested in a subset — a particular site, species, or time. Even with a simple vector, you may want to pull out a specific entry. R calls this process subsetting, and we do it with square brackets `[]`.
+
+Here’s an example: suppose you ran a 10-day bird survey at a wetland site, recording the number of herons seen each day:
+```{r}
+herons <- c(12, 18, 5, 21, 9, 16, 8, 14, 19, 7)
+```
+
+To extract the first entry of a vector:
+```{r}
+# DEMO CODE HERE
+```
+
+To extract everything except the first entry:
+```{r}
+# DEMO CODE HERE
+```
+
+**QUESTION 1.6**
+Extract the third entry of the `herons` vector, and store it in a variable named `answer1.6`.
+```{r}
+# YOUR ANSWER HERE
+```
+
+**QUESTION 1.7**
+Extract everything except the third entry of `herons`. Store in a variable called `answer1.7`.
+```{r}
+# YOUR ANSWER HERE
+```
+
+**QUESTION 1.8**
+Extract the second and fourth entry of `herons`, and store it in `answer1.8a`.
+Then extract the fourth and second entry (note the order!), and store it in `answer1.8b`.
+
+Hint: remember `c()`!
+```{r}
+# YOUR ANSWER HERE
+```
+
+**QUESTION 1.9**
+Extract the second through fifth entry of `herons` using `:` to construct a sequence. Store in `answer1.9`.
+```{r}
+# YOUR ANSWER HERE
+```
+
+**QUESTION 1.10**
+Extract all entries of `herons` that are less than 15. Store in a variable named `answer1.10`.
+
+(Hint: this works because of logical subsetting!)
+```{r}
+# YOUR ANSWER HERE
+```
+
+**QUESTION 1.11**
+After all that subsetting, did the original herons vector change?
+
+Multiple Choice:
+A) yes
+B) no
+C) not sure
+
+Store your answer (the letter) in a variable called answer1.11.
+```{r}
+# answer1.11 <- YOUR ANSWER HERE
+```
+
+**QUESTION 1.12**
+Here’s a challenge: try using `[]` with `<-` to replace the second and third entries of `herons` with two new counts of your choosing (pick a number between 1-20).
+
+(Before you do that, let’s store the original vector for testing!)
+```{r}
+herons_old <- herons
+```
+
+Now go ahead and update entries 2 and 3:
+```{r}
+# YOUR ANSWER HERE
+```
+
+### 1.6 Functions
+Functions are one of the core building blocks of R. They’re reusable chunks of code that behave just like any other R object. You can spot a function by its name followed by parentheses. For example, if there were a function to count birds, it might look like this:: `count_birds()`
+
+**QUESTION 1.13**
+
+You have already used at least three functions in this worksheet, even before being formally introduced to the idea of functions. Which ones were they?
+
+A) `c()`
+B) `mean()`
+C) `typeof()`
+D) `length()`
+
+(Hint: More than one answer is correct — make a vector of all the correct ones!)
+```{r}
+# answer1.13 <- YOUR ANSWER HERE
+```
+
+There are tens of thousands of functions in R. Let’s explore a few basics. Type the following to see what happens:
+```{r}
+Sys.Date()
+```
+This outputs today’s date. Notice it’s not numeric or logical — it’s a character vector (a string).
+
+We can use a few very helpful functions in our experimental design. As ecologists we try to select our units of study randomly. We can also select random subsets of data, such as choosing survey days at random. In R, the function `sample()` does this. 
+
+Suppose you have your `herons` vector. You want to pick 3 random days to check how heron abundance varied. 
+```{r}
+sample(herons, size = 3, replace = FALSE) #demo code
+```
+`size = 3` tells us how many values to draw, while `replace = FALSE` prevents the same day from being picked more than once. 
+
+**QUESTION 1.14**
+Use `sample()` to draw 5 random daily heron counts *with replacement* from the `herons` vector. Store the results in a variable called `herons_sample`
+```{r}
+# YOUR ANSWER HERE
+```
+
+Functions can also manipulate input data to return values. Remember the `herons_old` vector from earlier? Let’s see the average number of herons per survey day:
+```{r}
+mean(herons_old)
+```
+
+Did this function change the vector `herons_old`? Check for yourself:
+```{r}
+herons_old
+```
+The input is unchanged — functions return new values, they don’t usually overwrite.
+
+
+**QUESTION 1.15**
+Functions don’t always return a single value. Try:
+- `range(herons_old)` → gives you the minimum and maximum.
+- `sqrt(herons_old)` → gives the square root of each daily count.
+
+Store the results in variables `answer1.15a` and `answer1.15b` respectively:
+```{r}
+# answer1.15a <- YOUR ANSWER CODE HERE
+# answer1.15b <- YOUR ANSWER CODE HERE
+```
+
+Functions can also take multiple arguments. You can check them by typing `?function_name`.
+```{r}
+?mean
+```
+Notice that `mean()` has several arguments, like `na.rm`, which is used to ignore missing values (NA).This is also helpful if you aren't sure how to use a function or what it does. It's like a built in help function.
+
+**QUESTION 1.16**
+Try calculating the mean heron count again from `herons_old`, but this time specify `na.rm = TRUE`.
+```{r}
+# YOUR ANSWER HERE
+```
+
+**QUESTION 1.17**
+Let’s simulate missing data. Replace the third entry of the `herons_old` vector with `NA` (not available).
+```{r}
+# YOUR ANSWER HERE
+```
+
+**QUESTION 1.18**
+Now try calculating the mean again, using `na.rm = TRUE`. Store it in a variable called `answer1.18`.
+```{r}
+# YOUR ANSWER HERE
+```
+Notice how the output changes when you remove missing data. What happens if you run the same code with `na.rm = FALSE`? Try it!
+
+```{r}
+# TRIAL CODE HERE, not marked
+```
+
+
+### Attributions
+This document is an adaptation of a worksheet put together by Joey Bernhardt and Icíar Fernández Boyano.
+
+```{r}
+sessionInfo() #very important for transparency
+```
