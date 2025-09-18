@@ -1,0 +1,448 @@
+---
+title: "Worksheet2_Student_4110"
+author: "YOUR NAME HERE"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cosmo
+    df_print: paged
+fontsize: 11pt
+---
+
+### By the end of this worksheet, you will be able to:
+* Explain how replication, controls, and randomization are key to ecological study design
+* Work in the RStudio IDE and write code in RMarkdown
+* Use `tidyverse` tools including `select()`, `filter()`, `mutate()`, `summarise()`, `group_by()` to wrangle ecological data
+* Knit a reproducible report that documents your workflow
+
+### Instructions & Grading
+* Correctly answer at least 15 of the questions to get full credit
+* Questions are labelled QUESTION. Other prompts are activities to guide your workflow. 
+
+## Getting Started:
+Load Packages and Read in Data
+```{r include=FALSE}
+suppressPackageStartupMessages(library(palmerpenguins))
+suppressPackageStartupMessages(library(tidyverse))
+```
+Remember, it's bad manners to keep a call to `install.packages()` in your source code, so don't forget to delete these lines if you ever need to run them.
+
+## Part 1: Exploring your data
+
+What's the first thing that you should do when you're starting a project with a new dataset? Having a coffee is a reasonable answer, but before that, you should look at the data. This may sound obvious, but a common mistake is to dive into the analysis too early before being familiar with the data - only to have to go back to the start when something goes wrong and you can't quite figure out why. Some of the questions you may want to ask are:
+
+    What is the format of the data?
+    What are the dimensions?
+    Are there missing data?
+
+You will learn how to answer these questions and more using dplyr.
+
+### Penguins Data
+
+`Palmer penguins` is an R data package created by Allison Horst. Data were collected and made available by Dr. Kristen Gorman and the Palmer Station, Antarctica LTER, a member of the Long Term Ecological Research Network. The dataset that we will be using is stored in a variable called "penguins". It is a subset of the "penguins_raw" dataset, also included in this R package. Let's have a look at it.
+```{r}
+head(penguins)
+```
+`head()` returns the first 6 rows of a dataframe, instead of printing all the data to screen. If you would like to look at `penguins` in another window, you can use the classic `View()` function. 
+
+### What is the format of the data? 
+Let's begin by checking the class of the `penguins` variable. This will give us a clue about the overall structure of the data.
+```{r}
+class(penguins)
+```
+As you can see, the function returns 3 classes: `"tbl_df"`, `"tbl"`, and `"data.frame"`. You may also see `spec_tbl_df`, which is a special tibble that carries along the column specification information that read_csv() inferred when it read the file. A dataframe is the default class for data read into R. Tibbles ("tbl" and "tbl_df") are a modern take on data frames, but slightly tweaked to work better in the tidyverse. 
+
+Tibbles behave like regular data frames, but with a few important improvements:  
+* They print in a cleaner, more readable format (showing only the first 10 rows and fitting to your screen)  
+* They keep the types of your variables obvious (numeric, character, factor, etc.)  
+* They work consistently with tidyverse functions like `filter()`, `mutate()`, and `summarise()`  
+
+You can think of a tibble as a tidy data frame designed to make analysis easier and less error-prone.
+
+### What are the dimensions?
+There are two functions that we can use to see exactly how many rows (observations) and columns (variables) we're dealing with. `dim()` is the base R option, and `glimpse()` is the dplyr flavour, which gives us some more information besides the row and column number. Give both a try!
+```{r}
+dim(penguins)
+glimpse(penguins)
+```
+There are more functions that you can use to further explore the dimensions, such as `nrow()`, `ncol()`, `colnames()` or `rownames()`, but we won't be looking into those.
+
+**Important note on function format for questions 1 - 15**
+Up until Question 15, you should write your code in the following format, where the first argument is always the dataset you are working with. 
+For example, if we want to filter penguins to year 2008, we would write:
+```{r}
+filter(penguins, year == 2008)
+```
+Here's what's happening:
+* `filter()` is the function
+* `penguins` is the first argument -> we're telling R what dataset we want to rearrange
+* `year` is the second argument -> we're telling R which column to use for ordering
+
+This "dataset-first" format is how all `dplyr` verbs work. You will switch the the pipe (`|>`) later in the assignment, but for now, include the dataset as the first argument in the function to work with basic `dplyr` verbs. 
+
+**QUESTION 1**
+In the `dim()` function, what is the first number that you see?  
+A) number of rows  
+B) number of columns
+
+**QUESTION 2**
+What does a row represent in `penguins`?
+
+A) A single species of penguin  
+B) A single island where penguins were observed  
+C) A single penguin individual measured in the study  
+D) A single measurement type (eg: bill length, body mass)
+
+## `filter()`
+In ecology we rarely analyze _everything_ all at once. You define a target subset and a minimal completeness rule. 
+
+Recall the `!` function. We can drop any particular rows if they don't meet a particular threshold or completeness. If I wanted to drop incomplete rows that are missing a value for any of `sex`, `bill_length_mm`, or `species`, I can do that via:
+```{r}
+filter(penguins, !if_any(any_of(c("sex", "bill_length_mm", "species")), is.na))
+```
+
+**QUESTION 3**
+Create an analysis subset: 
+* Keep observations from `2008` and species `Adelie` or `Gentoo`
+* Drop rows with NAs in any of: `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, `body_mass_g` (hint: remember `!`)
+* Save the subset as `answer3`
+
+Recall there were initially 344 penguin observations, how many observations remain? 
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+## `select()`
+
+**QUESTION 4**
+In the next few questions, you will practice using the dplyr verb `select()` to pick and modify variables by their names. From `penguins`, keep `species` and `island` columns, plus all numeric columns, in that order. Name this dataframe `answer4`. 
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+
+**QUESTION 5**
+Select all variables, from `bill_length_mm` to `body_mass_g` (in that order). Of course, you could do it this way...
+```{r}
+select(penguins, bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g)
+```
+
+But there is a better way to do it! Which do you think would work?
+
+    A) `select(penguins, body_mass_g:bill_length_mm)`
+    B) `select(penguins, c(body_mass_g::bill_length_mm))`
+    C) `select(penguins, bill_length_mm:body_mass_g)`
+    D) `select(penguins, bill_length_mm::body_mass_g)`
+
+Assign your answer to a variable called `answer5`
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+**QUESTION 6**
+You're doing a great job. Keep it up! Now, select all variables, except island. How would you write this code?
+
+    A) `select(penguins, "-island")`
+    B) `select(penguins, -island)`
+    C) `select(penguins, c("-island"))`
+
+Put your answer in a variable named `answer6`. We encourage you to try executing these!
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+**Re-order vs Select**
+When you want to change the order of columns, you have two options:
+* `relocate()` moves one or more columns around while keeping the rest in place.
+* `select()` can be used to explicitly create a new order. The helper `everything()` is a shortcut that means “all the other columns, in their current order.”
+
+For example, if I want to create a subset where species is the first column, followed by all remaining columns in their original order, I would ask for:
+```{r}
+select(penguins, species, everything())
+```
+
+**QUESTION 7**
+For this question, use `select()` (not `relocate`). Reorder the penguins tibble so that `year` comes first, and then use the tidyselect helper `everything()` to place all other columns after it. Store the result in a variable named `answer7`.
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+**QUESTION 8**
+Rename `flipper_length_mm` to `length_flipper_mm`. Store the result in a variable named `answer8`
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+## `filter()`
+In data wrangling, `filter()` lets us keep only the rows (observations) that meet certain conditions. This is like focusing only on the surveys, sites, or individuals relevant to a particular ecological question.
+
+**QUESTION 9**
+Pick penguins with body mass greater than 4110 g. Store the resulting tibble in a variable named `answer9`. 
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+### Storing the subsetted penguins data
+In question 9 above, you've created a subset of the `penguins` dataset by filtering for those penguins that have a body mass greater than 4110 g. Let's do a quick check to see how many penguins meet that threshold by comparing the dimensions of the `penguins` dataset and your subset, `answer9`. There are two different ways to do this.
+
+```{r}
+dim(penguins)
+dim(answer9)
+```
+
+**QUESTION 10**
+As you can see, in filtering down to penguins with a body mass greater than 4110g, we have lost almost almost 60% of our dataset. Store the number of penguins that are larger than 4110g in a vector called `answer10`.
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+Now, the filtered tibble we created in `answer9` doesn't seem like a very informative name. Let's rename it to something else.
+```{r}
+penguins4110 <- answer9
+```
+
+**QUESTION 11**
+From your "new" dataset `penguins4110`, take only data from penguins located in the `Biscoe island`. Store the result in a variable named `answer11`.
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+**QUESTION 12**
+Repeat the task from Question 11, but take data from islands `Torgersen` and `Dream`. Remember, when you want to select more than one island, you use `%in%` instead of `==`.
+
+Store your answer in a variable named `answer12`.
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+## `arrange()`
+
+Sometimes we don’t want to remove observations — we just want to see them in a more useful order. In ecological datasets, arranging rows can help us:
+* spot seasonal patterns by sorting surveys by date,
+* rank individuals by size or mass, or
+* put sites in order of survey effort  
+
+The `arrange()` function reorders rows based on the values of one or more columns. By default, it orders in ascending order (smallest → largest), but you can use `desc()` to reverse it.
+
+**QUESTION 13**
+Arrange the `penguins` tibble by `year` in ascending order. Store the result in a variable named `answer13`.
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+**QUESTION 14**
+Now arrange `penguins` by `year` in descending order. Store the result as `answer14`
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+**QUESTION 15**
+Ecologists often need to sort by multiple variables at once (e.g., year of study and size of individuals). Arrange penguins first by year (ascending) and then by body_mass_g (ascending). Store the result in `answer15`.
+
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+## Piping `|>`
+
+So far, we've been using `dplyr` verbs by inputting the dataset that we want to work on as the first argument of the function (e.g. `select(penguins, year))`. This is fine when you're using a single verb, i.e. you only want to filter observations, or select variables. However, more often than not you will want to do several tasks at once; such as filtering penguins with a certain body mass, and simultaneously ordering those penguins by year. Here is where piping `(|>)` comes in.
+
+Think of `|>` as the word "then"!
+
+Let's see an example. Here I want to combine `select()` with `arrange()`.
+
+This is how I could do it by *nesting* the two function calls. I am selecting variables `year`, `species`, `island`, and `body_mass_g`, while simultaneously arranging by `year`.
+```{r}
+print(arrange(select(penguins, year, species, island, body_mass_g),year))
+```
+
+However, that seems a little hard to read. Now using pipes:
+```{r}
+penguins |> 
+  select(year, species, island, body_mass_g) |> 
+  arrange(year) 
+```
+
+**For the following questions, your code must be formatted using pipes.**
+
+## `mutate()`
+
+The `mutate()` function allows you to create new columns, possibly using existing columns. Like `select()`, `filter()`, and `arrange()`, the `mutate()` function also takes a tibble as its first argument, and returns a tibble.
+
+The general syntax is: `dataset |> mutate(NEW_COLUMN_NAME = CALCULATION)`.
+
+Ecologists often need to keep track of individuals within a dataset. Using the penguins tibble, we'll create a new column that assigns each penguin a unique ID number and call this column `penguin_id`. 
+
+```{r}
+penguins |> 
+  mutate(penguin_ID = row_number()) |> 
+  relocate(penguin_ID)
+```
+
+**QUESTION 16**
+Create a new column in the penguins tibble that converts body mass from grams to kilograms. Call this column `body_mass_kg`.
+Then, reorder the columns so that `body_mass_kg` comes immediately after `body_mass_g`. Include this as part of a new dataset that includes all columns from `species` to `bill_depth_mm`, and `body_mass_g` to `year`.  Save the resulting tibble as `answer16`. 
+
+answer16 <- penguins |> 
+    function(FILL_THIS_IN) |> 
+    function(FILL_THIS_IN) |> 
+    function(FILL_THIS_IN)
+
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+## `group_by()`
+
+The `group_by()` function groups rows in your tibble according to one or more categorical variables. Once grouped, functions like `mutate()` operate within each group, not across the whole dataset. 
+
+When you group a dataset by a categorical variable (like `sex`), any functions inside `mutate()` are applied within each group separately. This is especially useful for standardizing traits (e.g., body size) so comparisons are fair across groups that differ in average values.
+
+**QUESTION 17**
+For the `penguins` dataset, calculate each penguin’s standardised body mass (z-score) within its sex group. This means subtracting the group mean and dividing by the group standard deviation. Call this new column `mass_z`. Arrange the results by `sex` and then by `mass_z` (ascending) so you can clearly see the smallest to largest standardized values per group. 
+
+Do this by rearranging the following lines and filling in the FILL_THIS_IN. Assign your answer to a variable named `answer17`.
+
+answer17 <- 
+    mutate(mass_z = (body_mass_g - mean(body_mass_g, na.rm = TRUE))/sd(body_mass_g, na.rm = TRUE)) |> 
+    group_by(FILL_THIS_IN) |> 
+    arrange(FILL_THIS_IN, .by_group = TRUE) |> 
+    penguins |> 
+    
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+## `summarise()`
+
+The last core `dplyr` verb is `summarise()`. It collapses a data frame to a single row:
+```{r}
+penguins |> 
+  summarise(body_mass_mean = mean(body_mass_g, na.rm = TRUE))
+```
+
+From R4DS Data Transformation:
+`summarise()` is not terribly useful unless we pair it with `group_by()`. This changes the unit of analysis from the complete dataset to individual groups. Then, when you use the dplyr verbs on a grouped data frame they'll be automatically applied "by group".
+
+For example, if we applied exactly the same code to a tibble grouped by `island`, we get the average body mass per `island`:
+```{r}
+penguins |> 
+  group_by(island) |> 
+  summarise(body_mass_mean = mean(body_mass_g, na.rm = TRUE), n = n())
+```
+
+When you use `summarise()` on a grouped tibble, by default it keeps part of the grouping structure. For example, if you grouped by both `species` and `island`, then summarised, your result would still stay grouped by `species`.
+
+That can be confusing if you expect the result to be a plain tibble.  
+* `.groups = "drop_last"` (the default) → drops only the last grouping variable.  
+* `.groups = "drop"` → removes all grouping, returning a regular tibble (what we want here).  
+* `.groups = "keep"` → keeps all grouping variables.
+
+Using `.groups = "drop"` is a good habit in assignments like this, because it ensures the result is just the summary table, without hidden grouping attached.
+
+**QUESTION 18**
+From the penguins tibble, calculate the mean flipper length (mm) for each combination of `species` and `sex`. Name the summary column `flipper_mean_mm`.
+
+Your tibble should have the columns `species`, `sex`, and `flipper_mean_mm` only (and in that order). Store the resulting tibble in a variable named `answer18`.
+
+Do this by rearranging the following lines and filling in the FILL_THIS_IN. Assign your answer to a variable named `answer18`.
+
+answer18 <- penguins |> 
+  select(FILL_THIS_IN)
+  summarise(FILL_THIS_IN, na.rm = TRUE), .groups = "drop") |> 
+  group_by(FILL_THIS_IN) |> 
+
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+**QUESTION 19**
+It's important to report sample sizes alongside means. Update the code for question 18 to include a column `n`. Save the result in a variable `answer19`.
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+**QUESTION 20**
+Ecologists are often interested in identifying extreme individuals within groups (e.g., the largest animals by body size).
+
+Using the penguins tibble, for each species determine the heaviest individual (based on `body_mass_g`). Keep only the columns `species`, `sex`, `island`, `body_mass_g`. Store the result in a tibble named `answer20`.How heavy (body_mass_g) is the largest individual for each of (a) Adelie, (b) Chinstrap, (c) Gentoo?
+
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+**Question 21**
+Are there any similarities you spot immediately between the heaviest penguin of each species? If so, what is similar?
+
+# Part 2: Scoped variants with `across()`
+
+Sometimes we want to perform the same operation on many columns. We can achieve this by embedding the `across()` function within the `mutate()` or `summarise()` functions.
+
+**QUESTION 22**
+Using the `penguins` dataset, what is the mean bill length and depth of penguins on each island, by year? The resulting tibble should have columns named `island`, `year`, `bill_length_mm`, and `bill_depth_mm`, in that order. Store the result in a variable named `answer22`. Be sure to remove NA's when you are calculating the mean.
+
+Hint: Use `starts_with()` instead of `where()` in the `across()` function.
+
+answer22 <- penguins |> 
+  group_by(FILL_THIS_IN) |> 
+  summarise(across(FILL_THIS_IN, .groups = "drop") |> 
+  select(FILL_THIS_IN)
+
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+### Combining results with `bind_rows()`
+
+Sometimes in ecology we want to compare results from two different wrangling steps — for example, the heaviest individuals vs. the longest-flippered individuals within each species. Each step gives you its own tibble.
+
+The function `bind_rows()` lets you stack multiple tibbles on top of each other as long as they share the same columns. This is like appending one dataset below another.
+
+For example, let's say we surveyed two groups of penguins separately and want to combine the results. 
+```{r}
+#create two tibbles of surveyed penguins
+adelie_subset <- penguins |> 
+  filter(species == "Adelie") |>
+  select(species, island, body_mass_g) |>
+  slice_head(n = 2)
+
+gentoo_subset <- penguins |>
+  filter(species == "Gentoo") |>
+  select(species, island, body_mass_g) |>
+  slice_head(n = 2)
+
+#preview each
+adelie_subset
+gentoo_subset
+```
+
+Now combine them:
+```{r}
+combined <- bind_rows(adelie_subset, gentoo_subset)
+combined
+```
+
+**Question 23**
+Here's a challenge for you: Use the code below as a starting point to extract the heaviest penguin (`body_mass_g`) and the longest-flippered penguin from each `species`. Then, combine the two results into a single tibble using `bind_rows()`. The resulting tibble should include the columns: `penguin_ID`, `species`, `sex`, `island`, `body_mass_g`, `flipper_length_mm`. Save your answer as `answer23`. Are the heaviest penguins also the penguins with the longest flippers? 
+
+heaviest <- penguins |>
+  group_by(FILL_THIS_IN) |>
+  slice_max(FILL_THIS_IN, with_ties = FALSE)
+
+longest_flipper <- penguins |>
+  group_by(FILL_THIS_IN) |>
+  slice_max(FILL_THIS_IN, with_ties = FALSE)
+
+```{r}
+#YOUR ANSWER CODE HERE
+```
+
+### Attributions
+This document is an adaptation of a worksheet put together by Joey Bernhardt and Icíar Fernández Boyano. 
+
+```{r}
+sessionInfo()
+```
+
